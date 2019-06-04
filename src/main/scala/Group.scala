@@ -32,7 +32,33 @@ case class Group(numbers: List[Number]) {
 
   private var _isSolved = false
   def isSolved: Boolean = {
-    if (!isSolved) _isSolved = numbers.forall(_.isSolved)
+    if (!_isSolved) _isSolved = numbers.forall(_.isSolved)
     _isSolved
+  }
+
+  def overlapNumbers(other: Group): List[Number] = {
+    this.numbers.intersect(other.numbers)
+  }
+}
+
+object Group {
+  def solve3(group1: Group, group2: Group): Unit = {
+    val overlap = group1.overlapNumbers(group2).filter(!_.isSolved)
+    val group1Other = group1.numbers
+      .filter(!_.isSolved)
+      .filter(!overlap.contains(_))
+    val group2Other = group2.numbers
+      .filter(!_.isSolved)
+      .filter(!overlap.contains(_))
+    for (n: Int <- overlap.flatMap(_.possibleNumbers).toSet) {
+      if (!group1Other.exists(_.possibleNumbers.contains(n))) {
+        group2Other.foreach(_.removePossibleNumber(n))
+        group2Other.foreach(_.solve1())
+      }
+      if (!group2Other.exists(_.possibleNumbers.contains(n))) {
+        group1Other.foreach(_.removePossibleNumber(n))
+        group1Other.foreach(_.solve1())
+      }
+    }
   }
 }
